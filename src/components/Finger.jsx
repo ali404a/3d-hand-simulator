@@ -9,7 +9,6 @@ function SegmentSpikes({ segL, segR, scale }) {
   
   for (let i = 1; i <= numSpikes; i++) {
     const zPos = (segL / (numSpikes + 1)) * i;
-    // 4 spikes around the circumference
     for (let j = 0; j < 4; j++) {
       const angle = (j * Math.PI) / 2;
       const x = -Math.sin(angle) * (segR + spikeH / 2 - 0.02);
@@ -42,50 +41,92 @@ export function Finger({ position, rotation=[0,0,0], jointAngles = [0, 0, 0], co
       if (setControlsEnabled) setControlsEnabled(true);
     }
     
-    // Drag down (positive dy) bends the finger down (negative angle)
-    const deltaAngle = -dy * (Math.PI / 2 / 100); 
+    // Use the larger movement (x or y) so it works regardless of camera angle
+    const movementVal = Math.abs(dx) > Math.abs(dy) ? -dx : -dy;
+    
+    // Increased sensitivity for mobile (60px = 90 degrees)
+    const deltaAngle = movementVal * (Math.PI / 2 / 60); 
     
     if (onChangeAngle) {
       onChangeAngle(index, initialAngles.current[index] + deltaAngle);
     }
-  });
+  }, { pointerEvents: true });
+
+  // A larger invisible radius for easier touch on mobile
+  const hitRadius = segR * 3.5;
 
   return (
     <group position={position} rotation={rotation}>
       {/* Base Joint */}
       <group rotation={[jointAngles[0], 0, 0]}>
-        <mesh position={[0, 0, segL / 2]} rotation={[Math.PI / 2, 0, 0]} {...bindJoint(0)}>
+        <mesh position={[0, 0, segL / 2]} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[segR, segR, segL, 16]} />
           <meshStandardMaterial color={color} />
         </mesh>
+        {/* Hitbox */}
+        <mesh position={[0, 0, segL / 2]} rotation={[Math.PI / 2, 0, 0]} {...bindJoint(0)}>
+          <cylinderGeometry args={[hitRadius, hitRadius, segL, 8]} />
+          <meshBasicMaterial visible={false} />
+        </mesh>
+        
         <SegmentSpikes segL={segL} segR={segR} scale={scale} />
-        <mesh position={[0, 0, 0]} {...bindJoint(0)}>
+        
+        <mesh position={[0, 0, 0]}>
           <sphereGeometry args={[segR * 1.1, 16, 16]} />
           <meshStandardMaterial color="#888" />
+        </mesh>
+        {/* Hitbox */}
+        <mesh position={[0, 0, 0]} {...bindJoint(0)}>
+          <sphereGeometry args={[hitRadius, 16, 16]} />
+          <meshBasicMaterial visible={false} />
         </mesh>
 
         {/* Middle Joint */}
         <group position={[0, 0, segL]} rotation={[jointAngles[1], 0, 0]}>
-          <mesh position={[0, 0, segL / 2]} rotation={[Math.PI / 2, 0, 0]} {...bindJoint(1)}>
+          <mesh position={[0, 0, segL / 2]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[segR, segR, segL, 16]} />
             <meshStandardMaterial color={color} />
           </mesh>
+          {/* Hitbox */}
+          <mesh position={[0, 0, segL / 2]} rotation={[Math.PI / 2, 0, 0]} {...bindJoint(1)}>
+            <cylinderGeometry args={[hitRadius, hitRadius, segL, 8]} />
+            <meshBasicMaterial visible={false} />
+          </mesh>
+          
           <SegmentSpikes segL={segL} segR={segR} scale={scale} />
-          <mesh position={[0, 0, 0]} {...bindJoint(1)}>
+          
+          <mesh position={[0, 0, 0]}>
             <sphereGeometry args={[segR * 1.1, 16, 16]} />
             <meshStandardMaterial color="#888" />
+          </mesh>
+          {/* Hitbox */}
+          <mesh position={[0, 0, 0]} {...bindJoint(1)}>
+            <sphereGeometry args={[hitRadius, 16, 16]} />
+            <meshBasicMaterial visible={false} />
           </mesh>
 
           {/* Distal Joint */}
           <group position={[0, 0, segL]} rotation={[jointAngles[2], 0, 0]}>
-            <mesh position={[0, 0, segL * 0.4]} rotation={[Math.PI / 2, 0, 0]} {...bindJoint(2)}>
+            <mesh position={[0, 0, segL * 0.4]} rotation={[Math.PI / 2, 0, 0]}>
               <cylinderGeometry args={[segR * 0.9, segR, segL * 0.8, 16]} />
               <meshStandardMaterial color={color} />
             </mesh>
+            {/* Hitbox */}
+            <mesh position={[0, 0, segL * 0.4]} rotation={[Math.PI / 2, 0, 0]} {...bindJoint(2)}>
+              <cylinderGeometry args={[hitRadius, hitRadius, segL * 0.8, 8]} />
+              <meshBasicMaterial visible={false} />
+            </mesh>
+            
             <SegmentSpikes segL={segL * 0.8} segR={segR * 0.9} scale={scale} />
-            <mesh position={[0, 0, 0]} {...bindJoint(2)}>
+            
+            <mesh position={[0, 0, 0]}>
               <sphereGeometry args={[segR * 1.1, 16, 16]} />
               <meshStandardMaterial color="#888" />
+            </mesh>
+            {/* Hitbox */}
+            <mesh position={[0, 0, 0]} {...bindJoint(2)}>
+              <sphereGeometry args={[hitRadius, 16, 16]} />
+              <meshBasicMaterial visible={false} />
             </mesh>
           </group>
         </group>
